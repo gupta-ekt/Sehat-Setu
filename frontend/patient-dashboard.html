@@ -1,0 +1,1615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Dashboard - Sehat Setu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #2d3748;
+        }
+        
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 2rem 0;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+        
+        .logo-section {
+            padding: 0 2rem 2rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .logo-section h1 {
+            color: #2c5282;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .nav-menu {
+            padding: 2rem 0;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem 2rem;
+            color: #64748b;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            margin: 0.2rem 1rem;
+            border-radius: 12px;
+            cursor: pointer;
+        }
+        
+        .nav-item:hover, .nav-item.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            transform: translateX(8px);
+        }
+        
+        .nav-item i {
+            width: 20px;
+            margin-right: 1rem;
+        }
+        
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .welcome-section h2 {
+            color: #2c3748;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .welcome-section p {
+            color: #64748b;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .content-section {
+            display: none;
+        }
+        
+        .content-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-8px);
+        }
+        
+        .stat-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            margin-right: 1rem;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2c3748;
+        }
+        
+        .stat-label {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2c3748;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-outline {
+            border: 2px solid #667eea;
+            color: #667eea;
+            background: transparent;
+        }
+        
+        .btn-outline:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #f56565, #e53e3e);
+            color: white;
+        }
+        
+        .health-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .metric-card {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 16px;
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .metric-label {
+            opacity: 0.9;
+        }
+        
+        .chat-container {
+            height: 500px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+        }
+        
+        .message {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+        
+        .message.user {
+            flex-direction: row-reverse;
+        }
+        
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        
+        .bot-avatar {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .user-avatar {
+            background: #e2e8f0;
+            color: #64748b;
+        }
+        
+        .message-content {
+            background: white;
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            max-width: 70%;
+        }
+        
+        .user .message-content {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .message-time {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-top: 0.5rem;
+        }
+        
+        .chat-input-container {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .chat-input {
+            flex: 1;
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+        }
+        
+        .chat-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .file-upload-area {
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 3rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .file-upload-area:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+        
+        .file-upload-area.dragover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            color: #cbd5e1;
+            margin-bottom: 1rem;
+        }
+        
+        .file-list {
+            margin-top: 2rem;
+        }
+        
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+        }
+        
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex: 1;
+        }
+        
+        .file-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .file-details h4 {
+            margin: 0;
+            font-size: 1rem;
+            color: #2c3748;
+        }
+        
+        .file-details p {
+            margin: 0.25rem 0 0;
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+        
+        .file-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #2c3748;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            z-index: 10000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            border-left: 4px solid #667eea;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            border-left-color: #48bb78;
+        }
+        
+        .notification.error {
+            border-left-color: #f56565;
+        }
+        
+        .notification.info {
+            border-left-color: #4299e1;
+        }
+        
+        .record-item {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #667eea;
+        }
+        
+        .record-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .record-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3748;
+            margin: 0;
+        }
+        
+        .record-date {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        
+        .record-content {
+            color: #4a5568;
+            line-height: 1.6;
+        }
+        
+        .record-meta {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            gap: 1rem;
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+        
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="logo-section">
+                <h1>Sehat Setu</h1>
+                <p>Patient Portal</p>
+            </div>
+            
+            <nav class="nav-menu">
+                <div class="nav-item active" data-section="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Dashboard
+                </div>
+                <div class="nav-item" data-section="health-chat">
+                    <i class="fas fa-comments"></i>
+                    AI Health Assistant
+                </div>
+                <div class="nav-item" data-section="medical-records">
+                    <i class="fas fa-file-medical"></i>
+                    Medical Records
+                </div>
+                <div class="nav-item" data-section="prescriptions">
+                    <i class="fas fa-prescription-bottle-alt"></i>
+                    Prescriptions
+                </div>
+                <div class="nav-item" data-section="documents">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    Documents
+                </div>
+                <div class="nav-item" data-section="appointments">
+                    <i class="fas fa-calendar-alt"></i>
+                    Appointments
+                </div>
+                <div class="nav-item" data-section="profile">
+                    <i class="fas fa-user-cog"></i>
+                    Profile
+                </div>
+            </nav>
+            
+            <div style="position: absolute; bottom: 2rem; left: 2rem; right: 2rem;">
+                <button class="btn btn-outline" onclick="logout()" style="width: 100%;">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </button>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="welcome-section">
+                    <h2 id="welcomeMessage">Welcome back!</h2>
+                    <p>Manage your health records and get AI-powered assistance</p>
+                </div>
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">P</div>
+                    <div>
+                        <div style="font-weight: 600;" id="patientName">Patient</div>
+                        <div style="font-size: 0.9rem; color: #64748b;" id="patientId">ID: Loading...</div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="content-section active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon">
+                                <i class="fas fa-user-md"></i>
+                            </div>
+                            <div>
+                                <div class="stat-value" id="consultationCount">12</div>
+                                <div class="stat-label">Total Consultations</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon">
+                                <i class="fas fa-pills"></i>
+                            </div>
+                            <div>
+                                <div class="stat-value" id="prescriptionCount">8</div>
+                                <div class="stat-label">Active Prescriptions</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <div>
+                                <div class="stat-value" id="documentCount">15</div>
+                                <div class="stat-label">Medical Documents</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <div>
+                                <div class="stat-value" id="nextAppointment">2 days</div>
+                                <div class="stat-label">Next Appointment</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Health Metrics -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Health Metrics</h3>
+                        <button class="btn btn-primary" onclick="showAddMetricModal()">
+                            <i class="fas fa-plus"></i>
+                            Add Reading
+                        </button>
+                    </div>
+                    <div class="health-metrics" id="healthMetrics">
+                        <!-- Health metrics will be loaded here -->
+                    </div>
+                </div>
+                
+                <!-- Recent Activities -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Recent Activities</h3>
+                    </div>
+                    <div id="recentActivities">
+                        <!-- Recent activities will be loaded here -->
+                    </div>
+                </div>
+            </section>
+            
+            <!-- AI Health Chat Section -->
+            <section id="health-chat" class="content-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">AI Health Assistant</h3>
+                        <div style="display: flex; gap: 1rem;">
+                            <button class="btn btn-outline" onclick="clearChat()">
+                                <i class="fas fa-trash"></i>
+                                Clear Chat
+                            </button>
+                            <button class="btn btn-primary" onclick="exportChatHistory()">
+                                <i class="fas fa-download"></i>
+                                Export Chat
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-container">
+                        <div class="chat-messages" id="chatMessages">
+                            <div class="message">
+                                <div class="message-avatar bot-avatar">
+                                    <i class="fas fa-robot"></i>
+                                </div>
+                                <div class="message-content">
+                                    <p>Hello! I'm your AI health assistant. How can I help you today? Please describe your symptoms or health concerns.</p>
+                                    <div class="message-time">Just now</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="chat-input-container">
+                            <input type="text" class="chat-input" id="chatInput" placeholder="Describe your symptoms or health concerns...">
+                            <button class="btn btn-primary" onclick="sendMessage()">
+                                <i class="fas fa-paper-plane"></i>
+                                Send
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Medical Records Section -->
+            <section id="medical-records" class="content-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Medical History</h3>
+                        <button class="btn btn-primary" onclick="generateHealthReport()">
+                            <i class="fas fa-chart-line"></i>
+                            Generate Report
+                        </button>
+                    </div>
+                    
+                    <div id="medicalHistory">
+                        <!-- Medical history will be loaded here -->
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Prescriptions Section -->
+            <section id="prescriptions" class="content-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Your Prescriptions</h3>
+                        <button class="btn btn-primary" onclick="requestPrescription()">
+                            <i class="fas fa-plus"></i>
+                            Request Prescription
+                        </button>
+                    </div>
+                    
+                    <div id="prescriptionsList">
+                        <!-- Prescriptions will be loaded here -->
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Documents Upload Section -->
+            <section id="documents" class="content-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Medical Documents</h3>
+                        <div style="display: flex; gap: 1rem;">
+                            <button class="btn btn-outline" onclick="viewAllDocuments()">
+                                <i class="fas fa-folder"></i>
+                                View All
+                            </button>
+                            <button class="btn btn-primary" onclick="uploadBulkDocuments()">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                Bulk Upload
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="file-upload-area" id="fileUploadArea" onclick="document.getElementById('fileInput').click()">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <h3>Drop files here or click to browse</h3>
+                        <p>Supported formats: PDF, JPG, PNG, DOCX (Max 10MB each)</p>
+                        <input type="file" id="fileInput" multiple accept=".pdf,.jpg,.jpeg,.png,.docx" style="display: none;">
+                    </div>
+                    
+                    <div class="file-list" id="uploadedFiles">
+                        <!-- Uploaded files will appear here -->
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Appointments Section -->
+            <section id="appointments" class="content-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Your Appointments</h3>
+                        <button class="btn btn-primary" onclick="bookAppointment()">
+                            <i class="fas fa-plus"></i>
+                            Book Appointment
+                        </button>
+                    </div>
+                    
+                    <div id="appointmentsList">
+                        <!-- Appointments will be loaded here -->
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Profile Section -->
+            <section id="profile" class="content-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Profile Settings</h3>
+                        <button class="btn btn-primary" onclick="updateProfile()">
+                            <i class="fas fa-save"></i>
+                            Save Changes
+                        </button>
+                    </div>
+                    
+                    <form id="profileForm" class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" class="form-input" id="profileName" placeholder="Enter your full name">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Email Address</label>
+                            <input type="email" class="form-input" id="profileEmail" placeholder="Enter your email">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Phone Number</label>
+                            <input type="tel" class="form-input" id="profilePhone" placeholder="Enter your phone number">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Date of Birth</label>
+                            <input type="date" class="form-input" id="profileDOB">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Gender</label>
+                            <select class="form-input" id="profileGender">
+                                <option value="">Select Gender</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Blood Group</label>
+                            <select class="form-input" id="profileBloodGroup">
+                                <option value="">Select Blood Group</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label class="form-label">Emergency Contact</label>
+                            <input type="tel" class="form-input" id="emergencyContact" placeholder="Emergency contact number">
+                        </div>
+                        
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label class="form-label">Medical Conditions</label>
+                            <textarea class="form-input" id="medicalConditions" rows="3" placeholder="Any chronic conditions, allergies, or important medical information..."></textarea>
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Dashboard functionality
+        class PatientDashboard {
+            constructor() {
+                this.currentUser = null;
+                this.chatHistory = [];
+                this.init();
+            }
+
+            async init() {
+                try {
+                    // Check authentication
+                    if (!this.checkAuth()) {
+                        window.location.href = 'login.html';
+                        return;
+                    }
+
+                    // Load user data
+                    await this.loadUserData();
+                    
+                    // Initialize UI
+                    this.initializeNavigation();
+                    this.initializeChat();
+                    this.initializeFileUpload();
+                    
+                    // Load dashboard data
+                    await this.loadDashboardData();
+                    
+                } catch (error) {
+                    console.error('Dashboard initialization error:', error);
+                    this.showNotification('Error loading dashboard', 'error');
+                }
+            }
+
+            checkAuth() {
+                const token = localStorage.getItem('userToken');
+                const userType = localStorage.getItem('userType');
+                return token && userType === 'patient';
+            }
+
+            async loadUserData() {
+                const userData = localStorage.getItem('userData');
+                const userName = localStorage.getItem('userName');
+                const userId = localStorage.getItem('userId');
+
+                if (userData) {
+                    this.currentUser = JSON.parse(userData);
+                }
+
+                // Update UI
+                document.getElementById('welcomeMessage').textContent = `Welcome back, ${userName || 'Patient'}!`;
+                document.getElementById('patientName').textContent = userName || 'Patient';
+                document.getElementById('patientId').textContent = `ID: ${userId || 'Loading...'}`;
+                document.getElementById('userAvatar').textContent = (userName || 'P').charAt(0).toUpperCase();
+
+                // Load profile form
+                if (this.currentUser) {
+                    this.loadProfileForm();
+                }
+            }
+
+            loadProfileForm() {
+                const user = this.currentUser;
+                document.getElementById('profileName').value = user.name || '';
+                document.getElementById('profileEmail').value = user.email || '';
+                document.getElementById('profilePhone').value = user.phone || '';
+                document.getElementById('profileDOB').value = user.dateOfBirth || '';
+                document.getElementById('profileGender').value = user.gender || '';
+                document.getElementById('profileBloodGroup').value = user.bloodGroup || '';
+                document.getElementById('emergencyContact').value = user.emergencyContact || '';
+                document.getElementById('medicalConditions').value = user.medicalConditions || '';
+            }
+
+            initializeNavigation() {
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                        document.querySelectorAll('.content-section').forEach(section => section.classList.remove('active'));
+                        
+                        item.classList.add('active');
+                        const sectionId = item.getAttribute('data-section');
+                        document.getElementById(sectionId).classList.add('active');
+                        
+                        this.loadSectionData(sectionId);
+                    });
+                });
+            }
+
+            initializeChat() {
+                const chatInput = document.getElementById('chatInput');
+                chatInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.sendMessage();
+                    }
+                });
+            }
+
+            initializeFileUpload() {
+                const fileUploadArea = document.getElementById('fileUploadArea');
+                const fileInput = document.getElementById('fileInput');
+
+                fileUploadArea.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    fileUploadArea.classList.add('dragover');
+                });
+
+                fileUploadArea.addEventListener('dragleave', () => {
+                    fileUploadArea.classList.remove('dragover');
+                });
+
+                fileUploadArea.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    fileUploadArea.classList.remove('dragover');
+                    this.handleFiles(e.dataTransfer.files);
+                });
+
+                fileInput.addEventListener('change', (e) => {
+                    this.handleFiles(e.target.files);
+                });
+            }
+
+            async loadSectionData(sectionId) {
+                try {
+                    switch (sectionId) {
+                        case 'dashboard':
+                            await this.loadDashboardData();
+                            break;
+                        case 'medical-records':
+                            await this.loadMedicalRecords();
+                            break;
+                        case 'prescriptions':
+                            await this.loadPrescriptions();
+                            break;
+                        case 'documents':
+                            await this.loadDocuments();
+                            break;
+                        case 'appointments':
+                            await this.loadAppointments();
+                            break;
+                        case 'health-chat':
+                            this.loadChatHistory();
+                            break;
+                    }
+                } catch (error) {
+                    console.error(`Error loading ${sectionId}:`, error);
+                }
+            }
+
+            async loadDashboardData() {
+                // Load health metrics
+                const healthMetrics = [
+                    { label: 'Weight', value: '70 kg', status: 'normal' },
+                    { label: 'Blood Pressure', value: '120/80', status: 'normal' },
+                    { label: 'Heart Rate', value: '72 bpm', status: 'normal' },
+                    { label: 'Temperature', value: '98.6°F', status: 'normal' },
+                    { label: 'Blood Sugar', value: '95 mg/dL', status: 'normal' },
+                    { label: 'BMI', value: '23.5', status: 'normal' }
+                ];
+
+                const container = document.getElementById('healthMetrics');
+                container.innerHTML = healthMetrics.map(metric => `
+                    <div class="metric-card">
+                        <div class="metric-value">${metric.value}</div>
+                        <div class="metric-label">${metric.label}</div>
+                    </div>
+                `).join('');
+
+                // Load recent activities
+                this.loadRecentActivities();
+            }
+
+            loadRecentActivities() {
+                const activities = [
+                    {
+                        type: 'consultation',
+                        title: 'Virtual Consultation Completed',
+                        description: 'Consultation with Dr. Smith about annual checkup',
+                        date: '2 days ago',
+                        icon: 'user-md'
+                    },
+                    {
+                        type: 'prescription',
+                        title: 'New Prescription Added',
+                        description: 'Paracetamol 500mg prescribed for fever',
+                        date: '5 days ago',
+                        icon: 'pills'
+                    },
+                    {
+                        type: 'document',
+                        title: 'Lab Report Uploaded',
+                        description: 'Blood test results from Central Lab',
+                        date: '1 week ago',
+                        icon: 'file-alt'
+                    }
+                ];
+
+                const container = document.getElementById('recentActivities');
+                container.innerHTML = activities.map(activity => `
+                    <div class="record-item">
+                        <div class="record-header">
+                            <h4 class="record-title">
+                                <i class="fas fa-${activity.icon}" style="margin-right: 0.5rem; color: #667eea;"></i>
+                                ${activity.title}
+                            </h4>
+                            <span class="record-date">${activity.date}</span>
+                        </div>
+                        <div class="record-content">${activity.description}</div>
+                    </div>
+                `).join('');
+            }
+
+            async sendMessage() {
+                const input = document.getElementById('chatInput');
+                const message = input.value.trim();
+                
+                if (!message) return;
+
+                // Add user message
+                this.addMessageToChat(message, 'user');
+                input.value = '';
+
+                // Show typing indicator
+                this.showTypingIndicator();
+
+                try {
+                    // In production, this would call your AI API
+                    const response = await this.getAIResponse(message);
+                    this.hideTypingIndicator();
+                    this.addMessageToChat(response, 'bot');
+                    
+                    // Save to chat history
+                    this.chatHistory.push({ message, response, timestamp: new Date() });
+                    localStorage.setItem('chatHistory', JSON.stringify(this.chatHistory));
+
+                } catch (error) {
+                    this.hideTypingIndicator();
+                    this.addMessageToChat('Sorry, I encountered an error. Please try again.', 'bot');
+                }
+            }
+
+            addMessageToChat(message, sender) {
+                const chatMessages = document.getElementById('chatMessages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${sender}`;
+                
+                const avatar = sender === 'user' ? 
+                    `<div class="message-avatar user-avatar">${this.currentUser?.name?.charAt(0) || 'U'}</div>` :
+                    `<div class="message-avatar bot-avatar"><i class="fas fa-robot"></i></div>`;
+                
+                messageDiv.innerHTML = `
+                    ${avatar}
+                    <div class="message-content">
+                        <p>${message}</p>
+                        <div class="message-time">${new Date().toLocaleTimeString()}</div>
+                    </div>
+                `;
+                
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            showTypingIndicator() {
+                const chatMessages = document.getElementById('chatMessages');
+                const indicator = document.createElement('div');
+                indicator.className = 'message typing-indicator';
+                indicator.innerHTML = `
+                    <div class="message-avatar bot-avatar"><i class="fas fa-robot"></i></div>
+                    <div class="message-content">
+                        <p>Typing...</p>
+                    </div>
+                `;
+                chatMessages.appendChild(indicator);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            hideTypingIndicator() {
+                const indicator = document.querySelector('.typing-indicator');
+                if (indicator) {
+                    indicator.remove();
+                }
+            }
+
+            async getAIResponse(message) {
+                // Simulate AI response - in production, call your backend API
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                const lowerMessage = message.toLowerCase();
+                
+                if (lowerMessage.includes('fever')) {
+                    return 'For fever management, rest and stay hydrated. Consider acetaminophen for comfort. If temperature exceeds 102°F or persists beyond 3 days, consult a healthcare provider immediately.';
+                } else if (lowerMessage.includes('headache')) {
+                    return 'For headache relief, try resting in a quiet, dark room and apply a cold or warm compress. Stay hydrated and consider over-the-counter pain relievers if needed.';
+                } else if (lowerMessage.includes('cough')) {
+                    return 'For cough management, stay hydrated with warm liquids, use honey or throat lozenges, and try steam inhalation. If persistent or severe, consult a doctor.';
+                } else {
+                    return 'I understand your concern. For personalized medical advice, I recommend consulting with a healthcare provider. Is there anything specific about your symptoms you\'d like to discuss?';
+                }
+            }
+
+            loadChatHistory() {
+                const history = JSON.parse(localStorage.getItem('chatHistory') || '[]');
+                const chatMessages = document.getElementById('chatMessages');
+                
+                // Clear existing messages except welcome message
+                const welcomeMessage = chatMessages.querySelector('.message');
+                chatMessages.innerHTML = '';
+                chatMessages.appendChild(welcomeMessage);
+                
+                history.forEach(chat => {
+                    this.addMessageToChat(chat.message, 'user');
+                    this.addMessageToChat(chat.response, 'bot');
+                });
+            }
+
+            async loadMedicalRecords() {
+                const records = [
+                    {
+                        date: '2024-01-15',
+                        title: 'General Checkup',
+                        doctor: 'Dr. Smith',
+                        description: 'Annual health examination completed. All vitals normal. Blood pressure: 120/80, Weight: 70kg, Heart rate: 72 bpm.',
+                        diagnosis: 'Good overall health',
+                        treatment: 'Continue regular exercise and balanced diet'
+                    },
+                    {
+                        date: '2024-01-10',
+                        title: 'Fever Consultation',
+                        doctor: 'Dr. Johnson',
+                        description: 'Patient presented with fever and headache. Temperature: 101°F.',
+                        diagnosis: 'Viral fever',
+                        treatment: 'Prescribed paracetamol 500mg, rest, and hydration'
+                    }
+                ];
+
+                const container = document.getElementById('medicalHistory');
+                container.innerHTML = records.map(record => `
+                    <div class="record-item">
+                        <div class="record-header">
+                            <h4 class="record-title">${record.title}</h4>
+                            <span class="record-date">${record.date}</span>
+                        </div>
+                        <div class="record-content">${record.description}</div>
+                        <div class="record-meta">
+                            <span><strong>Doctor:</strong> ${record.doctor}</span>
+                            <span><strong>Diagnosis:</strong> ${record.diagnosis}</span>
+                        </div>
+                        <div style="margin-top: 0.5rem;">
+                            <strong>Treatment:</strong> ${record.treatment}
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            async loadPrescriptions() {
+                const prescriptions = [
+                    {
+                        medication: 'Paracetamol',
+                        dosage: '500mg',
+                        frequency: 'Twice daily',
+                        duration: '5 days',
+                        doctor: 'Dr. Johnson',
+                        date: '2024-01-10',
+                        status: 'completed'
+                    },
+                    {
+                        medication: 'Vitamin D3',
+                        dosage: '1000 IU',
+                        frequency: 'Once daily',
+                        duration: '30 days',
+                        doctor: 'Dr. Smith',
+                        date: '2024-01-15',
+                        status: 'active'
+                    }
+                ];
+
+                const container = document.getElementById('prescriptionsList');
+                container.innerHTML = prescriptions.map(prescription => `
+                    <div class="record-item">
+                        <div class="record-header">
+                            <h4 class="record-title">${prescription.medication} - ${prescription.dosage}</h4>
+                            <span class="record-date" style="color: ${prescription.status === 'active' ? '#48bb78' : '#64748b'};">
+                                ${prescription.status}
+                            </span>
+                        </div>
+                        <div class="record-content">
+                            <strong>Frequency:</strong> ${prescription.frequency}<br>
+                            <strong>Duration:</strong> ${prescription.duration}
+                        </div>
+                        <div class="record-meta">
+                            <span><strong>Prescribed by:</strong> ${prescription.doctor}</span>
+                            <span><strong>Date:</strong> ${prescription.date}</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            async loadDocuments() {
+                const documents = [
+                    {
+                        name: 'Blood_Test_Report.pdf',
+                        date: '2024-01-15',
+                        size: '2.3 MB',
+                        type: 'Lab Report'
+                    },
+                    {
+                        name: 'X-Ray_Chest.jpg',
+                        date: '2024-01-10',
+                        size: '1.8 MB',
+                        type: 'X-Ray'
+                    }
+                ];
+
+                const container = document.getElementById('uploadedFiles');
+                container.innerHTML = documents.map(doc => `
+                    <div class="file-item">
+                        <div class="file-info">
+                            <div class="file-icon">
+                                <i class="fas fa-${doc.name.endsWith('.pdf') ? 'file-pdf' : 'file-image'}"></i>
+                            </div>
+                            <div class="file-details">
+                                <h4>${doc.name}</h4>
+                                <p>${doc.type} • ${doc.size} • ${doc.date}</p>
+                            </div>
+                        </div>
+                        <div class="file-actions">
+                            <button class="btn btn-outline btn-sm" onclick="viewDocument('${doc.name}')">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            <button class="btn btn-outline btn-sm" onclick="downloadDocument('${doc.name}')">
+                                <i class="fas fa-download"></i> Download
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            async loadAppointments() {
+                const appointments = [
+                    {
+                        date: '2024-09-10',
+                        time: '10:00 AM',
+                        doctor: 'Dr. Smith',
+                        type: 'Follow-up',
+                        status: 'scheduled'
+                    },
+                    {
+                        date: '2024-09-15',
+                        time: '2:00 PM',
+                        doctor: 'Dr. Johnson',
+                        type: 'Consultation',
+                        status: 'scheduled'
+                    }
+                ];
+
+                const container = document.getElementById('appointmentsList');
+                container.innerHTML = appointments.map(appointment => `
+                    <div class="record-item">
+                        <div class="record-header">
+                            <h4 class="record-title">${appointment.type} with ${appointment.doctor}</h4>
+                            <span class="record-date">${appointment.status}</span>
+                        </div>
+                        <div class="record-content">
+                            <strong>Date:</strong> ${appointment.date}<br>
+                            <strong>Time:</strong> ${appointment.time}
+                        </div>
+                        ${appointment.status === 'scheduled' ? `
+                            <div style="margin-top: 1rem; display: flex; gap: 1rem;">
+                                <button class="btn btn-primary btn-sm">
+                                    <i class="fas fa-video"></i> Join Virtual
+                                </button>
+                                <button class="btn btn-outline btn-sm">
+                                    <i class="fas fa-calendar-alt"></i> Reschedule
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `).join('');
+            }
+
+            handleFiles(files) {
+                Array.from(files).forEach(file => {
+                    if (file.size > 10 * 1024 * 1024) {
+                        this.showNotification('File size must be less than 10MB', 'error');
+                        return;
+                    }
+                    this.uploadFile(file);
+                });
+            }
+
+            async uploadFile(file) {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <div class="file-info">
+                        <div class="file-icon">
+                            <i class="fas fa-file"></i>
+                        </div>
+                        <div class="file-details">
+                            <h4>${file.name}</h4>
+                            <p>Uploading... 0%</p>
+                        </div>
+                    </div>
+                    <div class="upload-progress" style="width: 100px; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden;">
+                        <div style="height: 100%; background: linear-gradient(135deg, #667eea, #764ba2); width: 0%; transition: width 0.3s ease;"></div>
+                    </div>
+                `;
+
+                document.getElementById('uploadedFiles').appendChild(fileItem);
+
+                // Simulate upload progress
+                let progress = 0;
+                const progressBar = fileItem.querySelector('.upload-progress div');
+                const progressText = fileItem.querySelector('.file-details p');
+
+                const interval = setInterval(() => {
+                    progress += Math.random() * 15;
+                    if (progress > 100) progress = 100;
+
+                    progressBar.style.width = progress + '%';
+                    progressText.textContent = `Uploading... ${Math.round(progress)}%`;
+
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                        progressText.textContent = `${this.formatFileSize(file.size)} • Just now`;
+                        fileItem.innerHTML = `
+                            <div class="file-info">
+                                <div class="file-icon">
+                                    <i class="fas fa-${file.type.includes('image') ? 'file-image' : 'file-alt'}"></i>
+                                </div>
+                                <div class="file-details">
+                                    <h4>${file.name}</h4>
+                                    <p>${this.formatFileSize(file.size)} • Just now</p>
+                                </div>
+                            </div>
+                            <div class="file-actions">
+                                <button class="btn btn-outline btn-sm">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                                <button class="btn btn-outline btn-sm">
+                                    <i class="fas fa-download"></i> Download
+                                </button>
+                            </div>
+                        `;
+                        this.showNotification('File uploaded successfully', 'success');
+                    }
+                }, 200);
+            }
+
+            formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+
+            showNotification(message, type = 'info') {
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                        <span>${message}</span>
+                    </div>
+                `;
+                
+                document.body.appendChild(notification);
+                setTimeout(() => notification.classList.add('show'), 100);
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    setTimeout(() => notification.remove(), 300);
+                }, 4000);
+            }
+        }
+
+        // Global functions
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.clear();
+                window.location.href = 'login.html';
+            }
+        }
+
+        function sendMessage() {
+            dashboard.sendMessage();
+        }
+
+        function clearChat() {
+            if (confirm('Are you sure you want to clear the chat history?')) {
+                localStorage.removeItem('chatHistory');
+                document.getElementById('chatMessages').innerHTML = `
+                    <div class="message">
+                        <div class="message-avatar bot-avatar">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="message-content">
+                            <p>Hello! I'm your AI health assistant. How can I help you today?</p>
+                            <div class="message-time">Just now</div>
+                        </div>
+                    </div>
+                `;
+                dashboard.showNotification('Chat history cleared', 'success');
+            }
+        }
+
+        function exportChatHistory() {
+            const history = JSON.parse(localStorage.getItem('chatHistory') || '[]');
+            if (history.length === 0) {
+                dashboard.showNotification('No chat history to export', 'info');
+                return;
+            }
+
+            const exportData = {
+                patient: dashboard.currentUser?.name,
+                exportDate: new Date().toISOString(),
+                chatHistory: history
+            };
+
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `chat-history-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            
+            URL.revokeObjectURL(url);
+            dashboard.showNotification('Chat history exported successfully', 'success');
+        }
+
+        function updateProfile() {
+            const formData = {
+                name: document.getElementById('profileName').value,
+                email: document.getElementById('profileEmail').value,
+                phone: document.getElementById('profilePhone').value,
+                dateOfBirth: document.getElementById('profileDOB').value,
+                gender: document.getElementById('profileGender').value,
+                bloodGroup: document.getElementById('profileBloodGroup').value,
+                emergencyContact: document.getElementById('emergencyContact').value,
+                medicalConditions: document.getElementById('medicalConditions').value
+            };
+
+            // Update localStorage
+            Object.keys(formData).forEach(key => {
+                if (formData[key]) {
+                    localStorage.setItem(`patient${key.charAt(0).toUpperCase() + key.slice(1)}`, formData[key]);
+                }
+            });
+
+            dashboard.currentUser = { ...dashboard.currentUser, ...formData };
+            localStorage.setItem('userData', JSON.stringify(dashboard.currentUser));
+            
+            dashboard.showNotification('Profile updated successfully!', 'success');
+        }
+
+        function generateHealthReport() {
+            dashboard.showNotification('Generating health report...', 'info');
+            // Implementation for health report generation
+        }
+
+        function showAddMetricModal() {
+            dashboard.showNotification('Add health metric feature coming soon', 'info');
+        }
+
+        function requestPrescription() {
+            dashboard.showNotification('Prescription request feature coming soon', 'info');
+        }
+
+        function viewAllDocuments() {
+            dashboard.showNotification('View all documents feature coming soon', 'info');
+        }
+
+        function uploadBulkDocuments() {
+            dashboard.showNotification('Bulk upload feature coming soon', 'info');
+        }
+
+        function bookAppointment() {
+            dashboard.showNotification('Book appointment feature coming soon', 'info');
+        }
+
+        function viewDocument(fileName) {
+            dashboard.showNotification(`Viewing ${fileName}`, 'info');
+        }
+
+        function downloadDocument(fileName) {
+            dashboard.showNotification(`Downloading ${fileName}`, 'info');
+        }
+
+        // Initialize dashboard
+        const dashboard = new PatientDashboard();
+    </script>
+</body>
+</html>
