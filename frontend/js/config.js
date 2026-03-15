@@ -2,10 +2,12 @@
 // Sehat Setu Frontend Configuration
 
 const CONFIG = {
-  // API Base URL - Backend server
-  API_BASE_URL: 'http://localhost:3000/api',
+  // Auto-detect: use current origin in production, localhost in dev
+  API_BASE_URL: (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? 'http://localhost:3001/api'
+    : window.location.origin + '/api',
   
-  // Frontend URL - Live Server
+  // Frontend URL - Live Server (update this to match your frontend port)
   FRONTEND_URL: 'http://127.0.0.1:5500',
   
   // Cloudinary configuration (for file uploads)

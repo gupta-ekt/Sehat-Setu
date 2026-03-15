@@ -820,8 +820,8 @@
                             <i class="fas fa-cloud-upload-alt"></i>
                         </div>
                         <h3>Drop files here or click to browse</h3>
-                        <p>Supported formats: PDF, JPG, PNG, DOCX (Max 10MB each)</p>
-                        <input type="file" id="fileInput" multiple accept=".pdf,.jpg,.jpeg,.png,.docx" style="display: none;">
+                        <p>Supported: PDF, Images, Videos, Word, Excel, ZIP and more (Max 50MB each)</p>
+                        <input type="file" id="fileInput" multiple accept="*/*" style="display: none;">
                     </div>
                     
                     <div class="file-list" id="uploadedFiles">
@@ -919,582 +919,11 @@
         </main>
     </div>
 
+    <script src="js/config.js"></script>
+    <script src="js/patient-dashboard.js"></script>
     <script>
-        // Dashboard functionality
-        class PatientDashboard {
-            constructor() {
-                this.currentUser = null;
-                this.chatHistory = [];
-                this.init();
-            }
+        // Global helper functions (dashboard is initialized in patient-dashboard.js)
 
-            async init() {
-                try {
-                    // Check authentication
-                    if (!this.checkAuth()) {
-                        window.location.href = 'login.html';
-                        return;
-                    }
-
-                    // Load user data
-                    await this.loadUserData();
-                    
-                    // Initialize UI
-                    this.initializeNavigation();
-                    this.initializeChat();
-                    this.initializeFileUpload();
-                    
-                    // Load dashboard data
-                    await this.loadDashboardData();
-                    
-                } catch (error) {
-                    console.error('Dashboard initialization error:', error);
-                    this.showNotification('Error loading dashboard', 'error');
-                }
-            }
-
-            checkAuth() {
-                const token = localStorage.getItem('userToken');
-                const userType = localStorage.getItem('userType');
-                return token && userType === 'patient';
-            }
-
-            async loadUserData() {
-                const userData = localStorage.getItem('userData');
-                const userName = localStorage.getItem('userName');
-                const userId = localStorage.getItem('userId');
-
-                if (userData) {
-                    this.currentUser = JSON.parse(userData);
-                }
-
-                // Update UI
-                document.getElementById('welcomeMessage').textContent = `Welcome back, ${userName || 'Patient'}!`;
-                document.getElementById('patientName').textContent = userName || 'Patient';
-                document.getElementById('patientId').textContent = `ID: ${userId || 'Loading...'}`;
-                document.getElementById('userAvatar').textContent = (userName || 'P').charAt(0).toUpperCase();
-
-                // Load profile form
-                if (this.currentUser) {
-                    this.loadProfileForm();
-                }
-            }
-
-            loadProfileForm() {
-                const user = this.currentUser;
-                document.getElementById('profileName').value = user.name || '';
-                document.getElementById('profileEmail').value = user.email || '';
-                document.getElementById('profilePhone').value = user.phone || '';
-                document.getElementById('profileDOB').value = user.dateOfBirth || '';
-                document.getElementById('profileGender').value = user.gender || '';
-                document.getElementById('profileBloodGroup').value = user.bloodGroup || '';
-                document.getElementById('emergencyContact').value = user.emergencyContact || '';
-                document.getElementById('medicalConditions').value = user.medicalConditions || '';
-            }
-
-            initializeNavigation() {
-                document.querySelectorAll('.nav-item').forEach(item => {
-                    item.addEventListener('click', () => {
-                        document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-                        document.querySelectorAll('.content-section').forEach(section => section.classList.remove('active'));
-                        
-                        item.classList.add('active');
-                        const sectionId = item.getAttribute('data-section');
-                        document.getElementById(sectionId).classList.add('active');
-                        
-                        this.loadSectionData(sectionId);
-                    });
-                });
-            }
-
-            initializeChat() {
-                const chatInput = document.getElementById('chatInput');
-                chatInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        this.sendMessage();
-                    }
-                });
-            }
-
-            initializeFileUpload() {
-                const fileUploadArea = document.getElementById('fileUploadArea');
-                const fileInput = document.getElementById('fileInput');
-
-                fileUploadArea.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    fileUploadArea.classList.add('dragover');
-                });
-
-                fileUploadArea.addEventListener('dragleave', () => {
-                    fileUploadArea.classList.remove('dragover');
-                });
-
-                fileUploadArea.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    fileUploadArea.classList.remove('dragover');
-                    this.handleFiles(e.dataTransfer.files);
-                });
-
-                fileInput.addEventListener('change', (e) => {
-                    this.handleFiles(e.target.files);
-                });
-            }
-
-            async loadSectionData(sectionId) {
-                try {
-                    switch (sectionId) {
-                        case 'dashboard':
-                            await this.loadDashboardData();
-                            break;
-                        case 'medical-records':
-                            await this.loadMedicalRecords();
-                            break;
-                        case 'prescriptions':
-                            await this.loadPrescriptions();
-                            break;
-                        case 'documents':
-                            await this.loadDocuments();
-                            break;
-                        case 'appointments':
-                            await this.loadAppointments();
-                            break;
-                        case 'health-chat':
-                            this.loadChatHistory();
-                            break;
-                    }
-                } catch (error) {
-                    console.error(`Error loading ${sectionId}:`, error);
-                }
-            }
-
-            async loadDashboardData() {
-                // Load health metrics
-                const healthMetrics = [
-                    { label: 'Weight', value: '70 kg', status: 'normal' },
-                    { label: 'Blood Pressure', value: '120/80', status: 'normal' },
-                    { label: 'Heart Rate', value: '72 bpm', status: 'normal' },
-                    { label: 'Temperature', value: '98.6°F', status: 'normal' },
-                    { label: 'Blood Sugar', value: '95 mg/dL', status: 'normal' },
-                    { label: 'BMI', value: '23.5', status: 'normal' }
-                ];
-
-                const container = document.getElementById('healthMetrics');
-                container.innerHTML = healthMetrics.map(metric => `
-                    <div class="metric-card">
-                        <div class="metric-value">${metric.value}</div>
-                        <div class="metric-label">${metric.label}</div>
-                    </div>
-                `).join('');
-
-                // Load recent activities
-                this.loadRecentActivities();
-            }
-
-            loadRecentActivities() {
-                const activities = [
-                    {
-                        type: 'consultation',
-                        title: 'Virtual Consultation Completed',
-                        description: 'Consultation with Dr. Smith about annual checkup',
-                        date: '2 days ago',
-                        icon: 'user-md'
-                    },
-                    {
-                        type: 'prescription',
-                        title: 'New Prescription Added',
-                        description: 'Paracetamol 500mg prescribed for fever',
-                        date: '5 days ago',
-                        icon: 'pills'
-                    },
-                    {
-                        type: 'document',
-                        title: 'Lab Report Uploaded',
-                        description: 'Blood test results from Central Lab',
-                        date: '1 week ago',
-                        icon: 'file-alt'
-                    }
-                ];
-
-                const container = document.getElementById('recentActivities');
-                container.innerHTML = activities.map(activity => `
-                    <div class="record-item">
-                        <div class="record-header">
-                            <h4 class="record-title">
-                                <i class="fas fa-${activity.icon}" style="margin-right: 0.5rem; color: #667eea;"></i>
-                                ${activity.title}
-                            </h4>
-                            <span class="record-date">${activity.date}</span>
-                        </div>
-                        <div class="record-content">${activity.description}</div>
-                    </div>
-                `).join('');
-            }
-
-            async sendMessage() {
-                const input = document.getElementById('chatInput');
-                const message = input.value.trim();
-                
-                if (!message) return;
-
-                // Add user message
-                this.addMessageToChat(message, 'user');
-                input.value = '';
-
-                // Show typing indicator
-                this.showTypingIndicator();
-
-                try {
-                    // In production, this would call your AI API
-                    const response = await this.getAIResponse(message);
-                    this.hideTypingIndicator();
-                    this.addMessageToChat(response, 'bot');
-                    
-                    // Save to chat history
-                    this.chatHistory.push({ message, response, timestamp: new Date() });
-                    localStorage.setItem('chatHistory', JSON.stringify(this.chatHistory));
-
-                } catch (error) {
-                    this.hideTypingIndicator();
-                    this.addMessageToChat('Sorry, I encountered an error. Please try again.', 'bot');
-                }
-            }
-
-            addMessageToChat(message, sender) {
-                const chatMessages = document.getElementById('chatMessages');
-                const messageDiv = document.createElement('div');
-                messageDiv.className = `message ${sender}`;
-                
-                const avatar = sender === 'user' ? 
-                    `<div class="message-avatar user-avatar">${this.currentUser?.name?.charAt(0) || 'U'}</div>` :
-                    `<div class="message-avatar bot-avatar"><i class="fas fa-robot"></i></div>`;
-                
-                messageDiv.innerHTML = `
-                    ${avatar}
-                    <div class="message-content">
-                        <p>${message}</p>
-                        <div class="message-time">${new Date().toLocaleTimeString()}</div>
-                    </div>
-                `;
-                
-                chatMessages.appendChild(messageDiv);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }
-
-            showTypingIndicator() {
-                const chatMessages = document.getElementById('chatMessages');
-                const indicator = document.createElement('div');
-                indicator.className = 'message typing-indicator';
-                indicator.innerHTML = `
-                    <div class="message-avatar bot-avatar"><i class="fas fa-robot"></i></div>
-                    <div class="message-content">
-                        <p>Typing...</p>
-                    </div>
-                `;
-                chatMessages.appendChild(indicator);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }
-
-            hideTypingIndicator() {
-                const indicator = document.querySelector('.typing-indicator');
-                if (indicator) {
-                    indicator.remove();
-                }
-            }
-
-            async getAIResponse(message) {
-                // Simulate AI response - in production, call your backend API
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                
-                const lowerMessage = message.toLowerCase();
-                
-                if (lowerMessage.includes('fever')) {
-                    return 'For fever management, rest and stay hydrated. Consider acetaminophen for comfort. If temperature exceeds 102°F or persists beyond 3 days, consult a healthcare provider immediately.';
-                } else if (lowerMessage.includes('headache')) {
-                    return 'For headache relief, try resting in a quiet, dark room and apply a cold or warm compress. Stay hydrated and consider over-the-counter pain relievers if needed.';
-                } else if (lowerMessage.includes('cough')) {
-                    return 'For cough management, stay hydrated with warm liquids, use honey or throat lozenges, and try steam inhalation. If persistent or severe, consult a doctor.';
-                } else {
-                    return 'I understand your concern. For personalized medical advice, I recommend consulting with a healthcare provider. Is there anything specific about your symptoms you\'d like to discuss?';
-                }
-            }
-
-            loadChatHistory() {
-                const history = JSON.parse(localStorage.getItem('chatHistory') || '[]');
-                const chatMessages = document.getElementById('chatMessages');
-                
-                // Clear existing messages except welcome message
-                const welcomeMessage = chatMessages.querySelector('.message');
-                chatMessages.innerHTML = '';
-                chatMessages.appendChild(welcomeMessage);
-                
-                history.forEach(chat => {
-                    this.addMessageToChat(chat.message, 'user');
-                    this.addMessageToChat(chat.response, 'bot');
-                });
-            }
-
-            async loadMedicalRecords() {
-                const records = [
-                    {
-                        date: '2024-01-15',
-                        title: 'General Checkup',
-                        doctor: 'Dr. Smith',
-                        description: 'Annual health examination completed. All vitals normal. Blood pressure: 120/80, Weight: 70kg, Heart rate: 72 bpm.',
-                        diagnosis: 'Good overall health',
-                        treatment: 'Continue regular exercise and balanced diet'
-                    },
-                    {
-                        date: '2024-01-10',
-                        title: 'Fever Consultation',
-                        doctor: 'Dr. Johnson',
-                        description: 'Patient presented with fever and headache. Temperature: 101°F.',
-                        diagnosis: 'Viral fever',
-                        treatment: 'Prescribed paracetamol 500mg, rest, and hydration'
-                    }
-                ];
-
-                const container = document.getElementById('medicalHistory');
-                container.innerHTML = records.map(record => `
-                    <div class="record-item">
-                        <div class="record-header">
-                            <h4 class="record-title">${record.title}</h4>
-                            <span class="record-date">${record.date}</span>
-                        </div>
-                        <div class="record-content">${record.description}</div>
-                        <div class="record-meta">
-                            <span><strong>Doctor:</strong> ${record.doctor}</span>
-                            <span><strong>Diagnosis:</strong> ${record.diagnosis}</span>
-                        </div>
-                        <div style="margin-top: 0.5rem;">
-                            <strong>Treatment:</strong> ${record.treatment}
-                        </div>
-                    </div>
-                `).join('');
-            }
-
-            async loadPrescriptions() {
-                const prescriptions = [
-                    {
-                        medication: 'Paracetamol',
-                        dosage: '500mg',
-                        frequency: 'Twice daily',
-                        duration: '5 days',
-                        doctor: 'Dr. Johnson',
-                        date: '2024-01-10',
-                        status: 'completed'
-                    },
-                    {
-                        medication: 'Vitamin D3',
-                        dosage: '1000 IU',
-                        frequency: 'Once daily',
-                        duration: '30 days',
-                        doctor: 'Dr. Smith',
-                        date: '2024-01-15',
-                        status: 'active'
-                    }
-                ];
-
-                const container = document.getElementById('prescriptionsList');
-                container.innerHTML = prescriptions.map(prescription => `
-                    <div class="record-item">
-                        <div class="record-header">
-                            <h4 class="record-title">${prescription.medication} - ${prescription.dosage}</h4>
-                            <span class="record-date" style="color: ${prescription.status === 'active' ? '#48bb78' : '#64748b'};">
-                                ${prescription.status}
-                            </span>
-                        </div>
-                        <div class="record-content">
-                            <strong>Frequency:</strong> ${prescription.frequency}<br>
-                            <strong>Duration:</strong> ${prescription.duration}
-                        </div>
-                        <div class="record-meta">
-                            <span><strong>Prescribed by:</strong> ${prescription.doctor}</span>
-                            <span><strong>Date:</strong> ${prescription.date}</span>
-                        </div>
-                    </div>
-                `).join('');
-            }
-
-            async loadDocuments() {
-                const documents = [
-                    {
-                        name: 'Blood_Test_Report.pdf',
-                        date: '2024-01-15',
-                        size: '2.3 MB',
-                        type: 'Lab Report'
-                    },
-                    {
-                        name: 'X-Ray_Chest.jpg',
-                        date: '2024-01-10',
-                        size: '1.8 MB',
-                        type: 'X-Ray'
-                    }
-                ];
-
-                const container = document.getElementById('uploadedFiles');
-                container.innerHTML = documents.map(doc => `
-                    <div class="file-item">
-                        <div class="file-info">
-                            <div class="file-icon">
-                                <i class="fas fa-${doc.name.endsWith('.pdf') ? 'file-pdf' : 'file-image'}"></i>
-                            </div>
-                            <div class="file-details">
-                                <h4>${doc.name}</h4>
-                                <p>${doc.type} • ${doc.size} • ${doc.date}</p>
-                            </div>
-                        </div>
-                        <div class="file-actions">
-                            <button class="btn btn-outline btn-sm" onclick="viewDocument('${doc.name}')">
-                                <i class="fas fa-eye"></i> View
-                            </button>
-                            <button class="btn btn-outline btn-sm" onclick="downloadDocument('${doc.name}')">
-                                <i class="fas fa-download"></i> Download
-                            </button>
-                        </div>
-                    </div>
-                `).join('');
-            }
-
-            async loadAppointments() {
-                const appointments = [
-                    {
-                        date: '2024-09-10',
-                        time: '10:00 AM',
-                        doctor: 'Dr. Smith',
-                        type: 'Follow-up',
-                        status: 'scheduled'
-                    },
-                    {
-                        date: '2024-09-15',
-                        time: '2:00 PM',
-                        doctor: 'Dr. Johnson',
-                        type: 'Consultation',
-                        status: 'scheduled'
-                    }
-                ];
-
-                const container = document.getElementById('appointmentsList');
-                container.innerHTML = appointments.map(appointment => `
-                    <div class="record-item">
-                        <div class="record-header">
-                            <h4 class="record-title">${appointment.type} with ${appointment.doctor}</h4>
-                            <span class="record-date">${appointment.status}</span>
-                        </div>
-                        <div class="record-content">
-                            <strong>Date:</strong> ${appointment.date}<br>
-                            <strong>Time:</strong> ${appointment.time}
-                        </div>
-                        ${appointment.status === 'scheduled' ? `
-                            <div style="margin-top: 1rem; display: flex; gap: 1rem;">
-                                <button class="btn btn-primary btn-sm">
-                                    <i class="fas fa-video"></i> Join Virtual
-                                </button>
-                                <button class="btn btn-outline btn-sm">
-                                    <i class="fas fa-calendar-alt"></i> Reschedule
-                                </button>
-                            </div>
-                        ` : ''}
-                    </div>
-                `).join('');
-            }
-
-            handleFiles(files) {
-                Array.from(files).forEach(file => {
-                    if (file.size > 10 * 1024 * 1024) {
-                        this.showNotification('File size must be less than 10MB', 'error');
-                        return;
-                    }
-                    this.uploadFile(file);
-                });
-            }
-
-            async uploadFile(file) {
-                const fileItem = document.createElement('div');
-                fileItem.className = 'file-item';
-                fileItem.innerHTML = `
-                    <div class="file-info">
-                        <div class="file-icon">
-                            <i class="fas fa-file"></i>
-                        </div>
-                        <div class="file-details">
-                            <h4>${file.name}</h4>
-                            <p>Uploading... 0%</p>
-                        </div>
-                    </div>
-                    <div class="upload-progress" style="width: 100px; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden;">
-                        <div style="height: 100%; background: linear-gradient(135deg, #667eea, #764ba2); width: 0%; transition: width 0.3s ease;"></div>
-                    </div>
-                `;
-
-                document.getElementById('uploadedFiles').appendChild(fileItem);
-
-                // Simulate upload progress
-                let progress = 0;
-                const progressBar = fileItem.querySelector('.upload-progress div');
-                const progressText = fileItem.querySelector('.file-details p');
-
-                const interval = setInterval(() => {
-                    progress += Math.random() * 15;
-                    if (progress > 100) progress = 100;
-
-                    progressBar.style.width = progress + '%';
-                    progressText.textContent = `Uploading... ${Math.round(progress)}%`;
-
-                    if (progress >= 100) {
-                        clearInterval(interval);
-                        progressText.textContent = `${this.formatFileSize(file.size)} • Just now`;
-                        fileItem.innerHTML = `
-                            <div class="file-info">
-                                <div class="file-icon">
-                                    <i class="fas fa-${file.type.includes('image') ? 'file-image' : 'file-alt'}"></i>
-                                </div>
-                                <div class="file-details">
-                                    <h4>${file.name}</h4>
-                                    <p>${this.formatFileSize(file.size)} • Just now</p>
-                                </div>
-                            </div>
-                            <div class="file-actions">
-                                <button class="btn btn-outline btn-sm">
-                                    <i class="fas fa-eye"></i> View
-                                </button>
-                                <button class="btn btn-outline btn-sm">
-                                    <i class="fas fa-download"></i> Download
-                                </button>
-                            </div>
-                        `;
-                        this.showNotification('File uploaded successfully', 'success');
-                    }
-                }, 200);
-            }
-
-            formatFileSize(bytes) {
-                if (bytes === 0) return '0 Bytes';
-                const k = 1024;
-                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-                const i = Math.floor(Math.log(bytes) / Math.log(k));
-                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-            }
-
-            showNotification(message, type = 'info') {
-                const notification = document.createElement('div');
-                notification.className = `notification ${type}`;
-                notification.innerHTML = `
-                    <div style="display: flex; align-items: center; gap: 0.75rem;">
-                        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : 'info-circle'}"></i>
-                        <span>${message}</span>
-                    </div>
-                `;
-                
-                document.body.appendChild(notification);
-                setTimeout(() => notification.classList.add('show'), 100);
-                setTimeout(() => {
-                    notification.classList.remove('show');
-                    setTimeout(() => notification.remove(), 300);
-                }, 4000);
-            }
-        }
-
-        // Global functions
         function logout() {
             if (confirm('Are you sure you want to logout?')) {
                 localStorage.clear();
@@ -1502,114 +931,395 @@
             }
         }
 
-        function sendMessage() {
-            dashboard.sendMessage();
+        function sendMessage() { dashboard.sendMessage(); }
+
+        function updateProfile() { dashboard.updateProfile(); }
+
+        function generateHealthReport() {
+            const userName = localStorage.getItem('userName') || 'Patient';
+            const userEmail = localStorage.getItem('userEmail') || '';
+            const userId = localStorage.getItem('userId') || '';
+            const healthMetrics = (dashboard && dashboard.healthMetrics) || [];
+            const records = window._medRecordCache || [];
+            const reportDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+            const metricsText = healthMetrics.length
+                ? healthMetrics.map(m => `${m.label}: ${m.value} ${m.unit}`).join('\n')
+                : 'No metrics recorded';
+            const recordsText = records.length
+                ? records.map((r, i) => {
+                    const isDb = !!r._id;
+                    const title = isDb ? `Consultation - Dr. ${r.doctorId?.name || 'Doctor'}` : r.title;
+                    const date = isDb ? new Date(r.appointmentDate).toLocaleDateString() : r.date;
+                    const doctor = isDb ? `Dr. ${r.doctorId?.name || 'Unknown'}` : r.doctor;
+                    const diagnosis = isDb ? (r.diagnosis || r.reason) : r.diagnosis;
+                    return `${i+1}. ${title} (${date})\n   Doctor: ${doctor}\n   Diagnosis: ${diagnosis || 'N/A'}`;
+                }).join('\n\n')
+                : 'No medical records found';
+            const content = `SEHAT SETU - HEALTH REPORT\nGenerated on: ${reportDate}\n\n${'━'.repeat(54)}\n\nPATIENT INFORMATION\n${'━'.repeat(54)}\nName: ${userName}\nEmail: ${userEmail}\nPatient ID: ${userId.substring(0,8)}\nReport Date: ${reportDate}\n\n${'━'.repeat(54)}\n\nCURRENT HEALTH METRICS\n${'━'.repeat(54)}\n${metricsText}\n\n${'━'.repeat(54)}\n\nMEDICAL HISTORY\n${'━'.repeat(54)}\n${recordsText}\n\n${'━'.repeat(54)}\n\nDISCLAIMER\n${'━'.repeat(54)}\nThis report is generated from Sehat Setu health records system.\nFor medical advice, please consult with a qualified healthcare provider.\n\n${'━'.repeat(54)}\nSehat Setu - Unified Health Records & Consultation Hub`;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Sehat_Setu_Health_Report_${userName.replace(/\s+/g,'_')}_${new Date().toISOString().split('T')[0]}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+            dashboard && dashboard.showNotification('Health report downloaded!', 'success');
         }
 
-        function clearChat() {
-            if (confirm('Are you sure you want to clear the chat history?')) {
-                localStorage.removeItem('chatHistory');
-                document.getElementById('chatMessages').innerHTML = `
-                    <div class="message">
-                        <div class="message-avatar bot-avatar">
-                            <i class="fas fa-robot"></i>
-                        </div>
-                        <div class="message-content">
-                            <p>Hello! I'm your AI health assistant. How can I help you today?</p>
-                            <div class="message-time">Just now</div>
-                        </div>
+        function showAddMetricModal() { window.showAddMetricModal && window.showAddMetricModal(); }
+
+        function requestPrescription() {
+            const existing = document.getElementById('prescriptionRequestModal');
+            if (existing) existing.remove();
+            const modal = document.createElement('div');
+            modal.id = 'prescriptionRequestModal';
+            modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000;';
+            modal.innerHTML = `
+                <div style="background:white;border-radius:20px;padding:2rem;max-width:600px;width:90%;max-height:90vh;overflow-y:auto;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+                        <h2 style="margin:0;color:#2c3748;">Request Prescription</h2>
+                        <button onclick="document.getElementById('prescriptionRequestModal').remove()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:#64748b;">×</button>
                     </div>
-                `;
-                dashboard.showNotification('Chat history cleared', 'success');
-            }
+                    <form id="prescriptionRequestForm" onsubmit="submitPrescriptionRequest(event)">
+                        <div style="margin-bottom:1.5rem;">
+                            <label style="display:block;margin-bottom:0.5rem;font-weight:500;color:#2c3748;">Select Doctor</label>
+                            <select id="prescriptionDoctor" required style="width:100%;padding:0.75rem;border:2px solid #e2e8f0;border-radius:12px;font-size:1rem;">
+                                <option value="">Choose a doctor</option>
+                                <option value="Dr. Sarah Johnson">Dr. Sarah Johnson - General Medicine</option>
+                                <option value="Dr. Michael Chen">Dr. Michael Chen - Cardiology</option>
+                                <option value="Dr. Emily Davis">Dr. Emily Davis - Dermatology</option>
+                                <option value="Dr. James Wilson">Dr. James Wilson - Pediatrics</option>
+                            </select>
+                        </div>
+                        <div style="margin-bottom:1.5rem;">
+                            <label style="display:block;margin-bottom:0.5rem;font-weight:500;color:#2c3748;">Reason for Prescription</label>
+                            <select id="prescriptionReason" required style="width:100%;padding:0.75rem;border:2px solid #e2e8f0;border-radius:12px;font-size:1rem;">
+                                <option value="">Select reason</option>
+                                <option value="Refill existing medication">Refill existing medication</option>
+                                <option value="New symptoms">New symptoms</option>
+                                <option value="Follow-up treatment">Follow-up treatment</option>
+                                <option value="Chronic condition management">Chronic condition management</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div style="margin-bottom:1.5rem;">
+                            <label style="display:block;margin-bottom:0.5rem;font-weight:500;color:#2c3748;">Symptoms / Details</label>
+                            <textarea id="prescriptionDetails" required rows="4" placeholder="Describe your symptoms or reason..." style="width:100%;padding:0.75rem;border:2px solid #e2e8f0;border-radius:12px;font-size:1rem;resize:vertical;"></textarea>
+                        </div>
+                        <div style="margin-bottom:1.5rem;">
+                            <label style="display:block;margin-bottom:0.5rem;font-weight:500;color:#2c3748;">Current Medications (if any)</label>
+                            <textarea id="prescriptionCurrentMeds" rows="2" placeholder="List any medications you're currently taking..." style="width:100%;padding:0.75rem;border:2px solid #e2e8f0;border-radius:12px;font-size:1rem;resize:vertical;"></textarea>
+                        </div>
+                        <div style="margin-bottom:1.5rem;">
+                            <label style="display:block;margin-bottom:0.5rem;font-weight:500;color:#2c3748;">Preferred Contact Method</label>
+                            <select id="prescriptionContact" required style="width:100%;padding:0.75rem;border:2px solid #e2e8f0;border-radius:12px;font-size:1rem;">
+                                <option value="app">In-App Notification</option>
+                                <option value="email">Email</option>
+                                <option value="phone">Phone Call</option>
+                                <option value="sms">SMS</option>
+                            </select>
+                        </div>
+                        <div style="display:flex;gap:1rem;">
+                            <button type="button" onclick="document.getElementById('prescriptionRequestModal').remove()" style="flex:1;padding:0.875rem;border:2px solid #667eea;color:#667eea;background:transparent;border-radius:12px;font-weight:500;cursor:pointer;">Cancel</button>
+                            <button type="submit" style="flex:1;padding:0.875rem;border:none;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border-radius:12px;font-weight:500;cursor:pointer;"><i class="fas fa-paper-plane"></i> Submit Request</button>
+                        </div>
+                    </form>
+                </div>`;
+            document.body.appendChild(modal);
+            modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
         }
 
-        function exportChatHistory() {
-            const history = JSON.parse(localStorage.getItem('chatHistory') || '[]');
-            if (history.length === 0) {
-                dashboard.showNotification('No chat history to export', 'info');
+        function viewAllDocuments() { dashboard.switchSection('documents'); }
+
+        function bookAppointment() { showBookAppointmentModal(); }
+
+        async function showBookAppointmentModal() {
+            const existing = document.getElementById('bookAppointmentModal');
+            if (existing) existing.remove();
+
+            let doctors = [];
+            try {
+                const token = localStorage.getItem('userToken');
+                const res = await fetch('`${CONFIG.API_BASE_URL}/doctors', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    doctors = data.data || [];
+                }
+            } catch(e) {}
+
+            const doctorOptions = doctors.length > 0
+                ? doctors.map(d => `<option value="${d._id}">${d.name} - ${d.specialty || 'General'}</option>`).join('')
+                : '<option value="">No doctors registered yet</option>';
+
+            const modal = document.createElement('div');
+            modal.id = 'bookAppointmentModal';
+            modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:10000;';
+            modal.innerHTML = `
+                <div style="background:white;border-radius:20px;padding:2rem;max-width:500px;width:90%;max-height:90vh;overflow-y:auto;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+                        <h3 style="color:#2d3748;font-size:1.5rem;"><i class="fas fa-calendar-plus" style="color:#667eea;margin-right:0.5rem;"></i>Book Appointment</h3>
+                        <button onclick="document.getElementById('bookAppointmentModal').remove()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:#64748b;">×</button>
+                    </div>
+                    <form id="bookAppointmentForm">
+                        <div style="margin-bottom:1rem;">
+                            <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Select Doctor</label>
+                            <select id="aptDoctor" required style="width:100%;padding:0.75rem;border:2px solid #e2e8f0;border-radius:12px;font-size:1rem;">
+                                <option value="">Choose a doctor...</option>
+                                ${doctorOptions}
+                            </select>
+                        </div>
+                        <div style="margin-bottom:1rem;">
+                            <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Date</label>
+                            <input type="date" id="aptDate" required min="${new Date().toISOString().split('T')[0]}" style="width:100%;padding:0.75rem;border:2px solid #e2e8f0;border-radius:12px;font-size:1rem;">
+                        </div>
+                        <div style="margin-bottom:1rem;">
+                            <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Time</label>
+                            <select id="aptTime" required style="width:100%;padding:0.75rem;border:2px solid #e2e8f0;border-radius:12px;font-size:1rem;">
+                                <option value="">Select time...</option>
+                                ${['09:00 AM','09:30 AM','10:00 AM','10:30 AM','11:00 AM','11:30 AM','12:00 PM','02:00 PM','02:30 PM','03:00 PM','03:30 PM','04:00 PM','04:30 PM'].map(t => `<option value="${t}">${t}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div style="margin-bottom:1rem;">
+                            <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Consultation Type</label>
+                            <select id="aptType" required style="width:100%;padding:0.75rem;border:2px solid #e2e8f0;border-radius:12px;font-size:1rem;">
+                                <option value="video">Video Consultation</option>
+                                <option value="in-person">In-Person</option>
+                                <option value="phone">Phone Call</option>
+                            </select>
+                        </div>
+                        <div style="margin-bottom:1.5rem;">
+                            <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Reason for Visit</label>
+                            <textarea id="aptReason" required rows="3" placeholder="Describe your symptoms or reason..." style="width:100%;padding:0.75rem;border:2px solid #e2e8f0;border-radius:12px;font-size:1rem;resize:vertical;"></textarea>
+                        </div>
+                        <button type="submit" style="width:100%;padding:1rem;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:12px;font-size:1rem;font-weight:600;cursor:pointer;">
+                            <i class="fas fa-calendar-check"></i> Confirm Booking
+                        </button>
+                    </form>
+                </div>`;
+
+            document.body.appendChild(modal);
+
+            document.getElementById('bookAppointmentForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const doctorId = document.getElementById('aptDoctor').value;
+                const date = document.getElementById('aptDate').value;
+                const time = document.getElementById('aptTime').value;
+                const type = document.getElementById('aptType').value;
+                const reason = document.getElementById('aptReason').value;
+
+                if (!doctorId) { dashboard.showNotification('Please select a doctor', 'error'); return; }
+
+                try {
+                    const token = localStorage.getItem('userToken');
+                    const response = await fetch('`${CONFIG.API_BASE_URL}/appointments', {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ doctorId, appointmentDate: date, appointmentTime: time, type, reason })
+                    });
+
+                    if (response.ok) {
+                        document.getElementById('bookAppointmentModal').remove();
+                        dashboard.showNotification('Appointment booked successfully!', 'success');
+                        dashboard.loadAppointments();
+                    } else {
+                        const err = await response.json();
+                        dashboard.showNotification(err.message || 'Error booking appointment', 'error');
+                    }
+                } catch (error) {
+                    dashboard.showNotification('Error booking appointment', 'error');
+                }
+            });
+        }
+
+        function rescheduleAppointment(id) { dashboard.rescheduleAppointment(id); }
+        function cancelAppointment(id) { dashboard.cancelAppointment(id); }
+        function joinVideoCall(appointmentId) {
+            // Generate a unique room based on appointment ID
+            const roomName = 'sehat-setu-' + appointmentId.slice(-8);
+            const doctorName = encodeURIComponent('Doctor');
+            const patientName = encodeURIComponent(localStorage.getItem('userName') || 'Patient');
+            // Open Jitsi Meet - free, no account needed
+            const url = `https://meet.jit.si/${roomName}#userInfo.displayName="${patientName}"`;
+            window.open(url, '_blank');
+            dashboard.showNotification('Opening video call room...', 'success');
+        }
+
+        function viewDocument(fileName) { dashboard.showNotification(`Viewing ${fileName}`, 'info'); }
+        function downloadDocument(fileName) { dashboard.showNotification(`Downloading ${fileName}`, 'info'); }
+        function downloadMedicalRecord(index) {
+            const cache = window._medRecordCache || [];
+            const r = cache[index];
+            if (!r) { dashboard && dashboard.showNotification('Record not found', 'error'); return; }
+            const userName = localStorage.getItem('userName') || 'Patient';
+            const isDb = !!r._id;
+            const title = isDb ? `Consultation - Dr. ${r.doctorId?.name || 'Doctor'}` : r.title;
+            const date = isDb ? new Date(r.appointmentDate).toLocaleDateString() : r.date;
+            const doctor = isDb ? `Dr. ${r.doctorId?.name || 'Unknown'}` : r.doctor;
+            const diagnosis = isDb ? (r.diagnosis || r.reason) : r.diagnosis;
+            const notes = isDb ? (r.consultationNotes || r.reason) : r.notes;
+            const content = `SEHAT SETU - MEDICAL RECORD\n=====================================\nPatient: ${userName}\nGenerated: ${new Date().toLocaleString()}\n=====================================\nTitle: ${title}\nDate: ${date}\nDoctor: ${doctor}\nDiagnosis: ${diagnosis || 'N/A'}\nNotes: ${notes || 'N/A'}\n=====================================\nSehat Setu - Unified Health Records`;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `medical-record-${(title||'record').replace(/\s+/g,'-')}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+            dashboard && dashboard.showNotification('Medical record downloaded!', 'success');
+        }
+        function shareMedicalRecord(index) {
+            const cache = window._medRecordCache || [];
+            const r = cache[index];
+            if (!r) return;
+            const isDb = !!r._id;
+            const title = isDb ? `Consultation - Dr. ${r.doctorId?.name || 'Doctor'}` : r.title;
+            const date = isDb ? new Date(r.appointmentDate).toLocaleDateString() : r.date;
+            const doctor = isDb ? `Dr. ${r.doctorId?.name || 'Unknown'}` : r.doctor;
+            const diagnosis = isDb ? (r.diagnosis || r.reason) : r.diagnosis;
+            const shareText = `🏥 Medical Record - Sehat Setu\n\n📋 ${title}\n📅 Date: ${date}\n👨‍⚕️ Doctor: ${doctor}\n🔍 Diagnosis: ${diagnosis || 'N/A'}\n\nShared via Sehat Setu Health Portal`;
+
+            // Use native share if available (mobile)
+            if (navigator.share) {
+                navigator.share({ title: 'Medical Record - Sehat Setu', text: shareText });
                 return;
             }
 
-            const exportData = {
-                patient: dashboard.currentUser?.name,
-                exportDate: new Date().toISOString(),
-                chatHistory: history
-            };
+            // Show share modal
+            const existing = document.getElementById('shareModal');
+            if (existing) existing.remove();
 
-            const dataStr = JSON.stringify(exportData, null, 2);
-            const dataBlob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(dataBlob);
-            
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `chat-history-${new Date().toISOString().split('T')[0]}.json`;
-            link.click();
-            
-            URL.revokeObjectURL(url);
-            dashboard.showNotification('Chat history exported successfully', 'success');
+            const modal = document.createElement('div');
+            modal.id = 'shareModal';
+            modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:10000;';
+            modal.innerHTML = `
+                <div style="background:white;border-radius:20px;padding:2rem;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+                        <h3 style="margin:0;color:#2d3748;font-size:1.3rem;"><i class="fas fa-share-alt" style="color:#667eea;margin-right:0.5rem;"></i>Share Medical Record</h3>
+                        <button onclick="document.getElementById('shareModal').remove()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:#64748b;line-height:1;">×</button>
+                    </div>
+
+                    <div style="background:#f8fafc;border-radius:12px;padding:1rem;margin-bottom:1.5rem;font-size:0.9rem;color:#4a5568;line-height:1.6;">
+                        ${shareText.replace(/\n/g,'<br>')}
+                    </div>
+
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+                        <button onclick="shareViaWhatsApp(${index})" style="display:flex;align-items:center;justify-content:center;gap:0.6rem;padding:0.9rem;background:#25D366;color:white;border:none;border-radius:12px;font-size:1rem;font-weight:600;cursor:pointer;">
+                            <i class="fab fa-whatsapp" style="font-size:1.3rem;"></i> WhatsApp
+                        </button>
+                        <button onclick="shareViaEmail(${index})" style="display:flex;align-items:center;justify-content:center;gap:0.6rem;padding:0.9rem;background:#EA4335;color:white;border:none;border-radius:12px;font-size:1rem;font-weight:600;cursor:pointer;">
+                            <i class="fas fa-envelope" style="font-size:1.2rem;"></i> Email
+                        </button>
+                    </div>
+                    <button onclick="copyShareText(${index})" style="display:flex;align-items:center;justify-content:center;gap:0.6rem;padding:0.9rem;width:100%;background:#667eea;color:white;border:none;border-radius:12px;font-size:1rem;font-weight:600;cursor:pointer;">
+                        <i class="fas fa-copy"></i> Copy to Clipboard
+                    </button>
+                </div>`;
+            document.body.appendChild(modal);
+            modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
         }
 
-        function updateProfile() {
-            const formData = {
-                name: document.getElementById('profileName').value,
-                email: document.getElementById('profileEmail').value,
-                phone: document.getElementById('profilePhone').value,
-                dateOfBirth: document.getElementById('profileDOB').value,
-                gender: document.getElementById('profileGender').value,
-                bloodGroup: document.getElementById('profileBloodGroup').value,
-                emergencyContact: document.getElementById('emergencyContact').value,
-                medicalConditions: document.getElementById('medicalConditions').value
-            };
+        function shareViaWhatsApp(index) {
+            const cache = window._medRecordCache || [];
+            const r = cache[index];
+            if (!r) return;
+            const isDb = !!r._id;
+            const title = isDb ? `Consultation - Dr. ${r.doctorId?.name || 'Doctor'}` : r.title;
+            const date = isDb ? new Date(r.appointmentDate).toLocaleDateString() : r.date;
+            const doctor = isDb ? `Dr. ${r.doctorId?.name || 'Unknown'}` : r.doctor;
+            const diagnosis = isDb ? (r.diagnosis || r.reason) : r.diagnosis;
+            const text = encodeURIComponent(`🏥 Medical Record - Sehat Setu\n\n📋 ${title}\n📅 Date: ${date}\n👨‍⚕️ Doctor: ${doctor}\n🔍 Diagnosis: ${diagnosis || 'N/A'}\n\nShared via Sehat Setu Health Portal`);
+            window.open(`https://wa.me/?text=${text}`, '_blank');
+            document.getElementById('shareModal')?.remove();
+        }
 
-            // Update localStorage
-            Object.keys(formData).forEach(key => {
-                if (formData[key]) {
-                    localStorage.setItem(`patient${key.charAt(0).toUpperCase() + key.slice(1)}`, formData[key]);
-                }
+        function shareViaEmail(index) {
+            const cache = window._medRecordCache || [];
+            const r = cache[index];
+            if (!r) return;
+            const isDb = !!r._id;
+            const title = isDb ? `Consultation - Dr. ${r.doctorId?.name || 'Doctor'}` : r.title;
+            const date = isDb ? new Date(r.appointmentDate).toLocaleDateString() : r.date;
+            const doctor = isDb ? `Dr. ${r.doctorId?.name || 'Unknown'}` : r.doctor;
+            const diagnosis = isDb ? (r.diagnosis || r.reason) : r.diagnosis;
+            const subject = encodeURIComponent(`Medical Record: ${title}`);
+            const body = encodeURIComponent(`Medical Record - Sehat Setu\n\nTitle: ${title}\nDate: ${date}\nDoctor: ${doctor}\nDiagnosis: ${diagnosis || 'N/A'}\n\nShared via Sehat Setu Health Portal`);
+            window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
+            document.getElementById('shareModal')?.remove();
+        }
+
+        function copyShareText(index) {
+            const cache = window._medRecordCache || [];
+            const r = cache[index];
+            if (!r) return;
+            const isDb = !!r._id;
+            const title = isDb ? `Consultation - Dr. ${r.doctorId?.name || 'Doctor'}` : r.title;
+            const date = isDb ? new Date(r.appointmentDate).toLocaleDateString() : r.date;
+            const doctor = isDb ? `Dr. ${r.doctorId?.name || 'Unknown'}` : r.doctor;
+            const diagnosis = isDb ? (r.diagnosis || r.reason) : r.diagnosis;
+            const text = `🏥 Medical Record - Sehat Setu\n\n📋 ${title}\n📅 Date: ${date}\n👨‍⚕️ Doctor: ${doctor}\n🔍 Diagnosis: ${diagnosis || 'N/A'}\n\nShared via Sehat Setu Health Portal`;
+            navigator.clipboard.writeText(text).then(() => {
+                dashboard && dashboard.showNotification('Copied to clipboard!', 'success');
+                document.getElementById('shareModal')?.remove();
             });
-
-            dashboard.currentUser = { ...dashboard.currentUser, ...formData };
-            localStorage.setItem('userData', JSON.stringify(dashboard.currentUser));
-            
-            dashboard.showNotification('Profile updated successfully!', 'success');
+        }
+        function downloadPrescription(prescriptionId) {
+            const cache = window._prescriptionCache || [];
+            const rx = cache.find(p => p.id === prescriptionId || p._id === prescriptionId);
+            if (!rx) { dashboard && dashboard.showNotification('Prescription not found', 'error'); return; }
+            const userName = localStorage.getItem('userName') || 'Patient';
+            const content = `SEHAT SETU - PRESCRIPTION\n=====================================\nPatient: ${userName}\nDate: ${rx.date || (rx.requestDate ? new Date(rx.requestDate).toLocaleDateString() : 'N/A')}\nDoctor: ${rx.doctor}\n=====================================\nMedication: ${rx.medication || rx.reason}\nDosage: ${rx.dosage || 'As prescribed'}\nFrequency: ${rx.frequency || 'As directed'}\nDuration: ${rx.duration || 'As directed'}\nInstructions: ${rx.instructions || rx.details || 'Follow doctor advice'}\nStatus: ${(rx.status || '').toUpperCase()}\n=====================================\nGenerated: ${new Date().toLocaleString()}`;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `prescription-${(rx.medication || rx.reason || 'rx').replace(/\s+/g,'-')}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+            dashboard && dashboard.showNotification('Prescription downloaded!', 'success');
         }
 
-        function generateHealthReport() {
-            dashboard.showNotification('Generating health report...', 'info');
-            // Implementation for health report generation
+        function printPrescription(prescriptionId) {
+            const cache = window._prescriptionCache || [];
+            const rx = cache.find(p => p.id === prescriptionId || p._id === prescriptionId);
+            if (!rx) { dashboard && dashboard.showNotification('Prescription not found', 'error'); return; }
+            const userName = localStorage.getItem('userName') || 'Patient';
+            const w = window.open('', '_blank');
+            w.document.write(`<!DOCTYPE html><html><head><title>Prescription</title>
+            <style>body{font-family:Arial,sans-serif;padding:40px;max-width:700px;margin:0 auto;}
+            h1{color:#667eea;text-align:center;}.section{background:#f8fafc;padding:1rem;border-radius:8px;margin:1rem 0;}
+            @media print{.no-print{display:none}}</style></head><body>
+            <h1>SEHAT SETU</h1><p style="text-align:center;color:#64748b;">Prescription</p>
+            <div class="section"><strong>Patient:</strong> ${userName}<br>
+            <strong>Doctor:</strong> ${rx.doctor}<br>
+            <strong>Date:</strong> ${rx.date || (rx.requestDate ? new Date(rx.requestDate).toLocaleDateString() : 'N/A')}</div>
+            <div class="section"><strong>Medication:</strong> ${rx.medication || rx.reason}<br>
+            <strong>Dosage:</strong> ${rx.dosage || 'As prescribed'}<br>
+            <strong>Frequency:</strong> ${rx.frequency || 'As directed'}<br>
+            <strong>Duration:</strong> ${rx.duration || 'As directed'}<br>
+            <strong>Instructions:</strong> ${rx.instructions || rx.details || 'Follow doctor advice'}</div>
+            <button class="no-print" onclick="window.print()" style="padding:0.75rem 2rem;background:#667eea;color:white;border:none;border-radius:8px;cursor:pointer;font-size:1rem;">Print</button>
+            </body></html>`);
+            w.document.close();
+            dashboard && dashboard.showNotification('Opening print preview...', 'info');
         }
 
-        function showAddMetricModal() {
-            dashboard.showNotification('Add health metric feature coming soon', 'info');
+        function cancelPrescriptionRequest(requestId) {
+            if (!confirm('Cancel this prescription request?')) return;
+            const token = localStorage.getItem('userToken');
+            fetch(``${CONFIG.API_BASE_URL}/prescription-requests/${requestId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            }).then(r => {
+                if (r.ok) {
+                    dashboard && dashboard.showNotification('Request cancelled', 'success');
+                    dashboard && dashboard.loadPrescriptions();
+                } else {
+                    dashboard && dashboard.showNotification('Could not cancel request', 'error');
+                }
+            }).catch(() => dashboard && dashboard.showNotification('Error cancelling request', 'error'));
         }
-
-        function requestPrescription() {
-            dashboard.showNotification('Prescription request feature coming soon', 'info');
-        }
-
-        function viewAllDocuments() {
-            dashboard.showNotification('View all documents feature coming soon', 'info');
-        }
-
-        function uploadBulkDocuments() {
-            dashboard.showNotification('Bulk upload feature coming soon', 'info');
-        }
-
-        function bookAppointment() {
-            dashboard.showNotification('Book appointment feature coming soon', 'info');
-        }
-
-        function viewDocument(fileName) {
-            dashboard.showNotification(`Viewing ${fileName}`, 'info');
-        }
-
-        function downloadDocument(fileName) {
-            dashboard.showNotification(`Downloading ${fileName}`, 'info');
-        }
-
-        // Initialize dashboard
-        const dashboard = new PatientDashboard();
     </script>
 </body>
 </html>
