@@ -53,7 +53,7 @@ class PatientDashboard {
                 return;
             }
 
-            const response = await fetch('`${CONFIG.API_BASE_URL}/auth/profile', {
+            const response = await fetch(`${CONFIG.API_BASE_URL}/auth/profile`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -266,7 +266,7 @@ class PatientDashboard {
             const token = localStorage.getItem('userToken');
             if (!token) return;
 
-            const response = await fetch('`${CONFIG.API_BASE_URL}/health-metrics/latest', {
+            const response = await fetch(`${CONFIG.API_BASE_URL}/health-metrics/latest`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -414,7 +414,7 @@ class PatientDashboard {
         }
 
         try {
-            const response = await fetch('`${CONFIG.API_BASE_URL}/ai/chat', {
+            const response = await fetch(`${CONFIG.API_BASE_URL}/ai/chat`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message, history: this._chatHistory.slice(-10) })
@@ -468,7 +468,7 @@ class PatientDashboard {
             // Pull completed appointments as medical records
             let records = [];
             if (token) {
-                const res = await fetch('`${CONFIG.API_BASE_URL}/appointments', {
+                const res = await fetch(`${CONFIG.API_BASE_URL}/appointments`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (res.ok) {
@@ -547,7 +547,7 @@ class PatientDashboard {
             // Fetch prescription requests from backend
             let requests = [];
             if (token) {
-                const response = await fetch('`${CONFIG.API_BASE_URL}/prescription-requests', {
+                const response = await fetch(`${CONFIG.API_BASE_URL}/prescription-requests`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -782,7 +782,7 @@ class PatientDashboard {
             let appointments = [];
 
             if (token) {
-                const response = await fetch('`${CONFIG.API_BASE_URL}/appointments', {
+                const response = await fetch(`${CONFIG.API_BASE_URL}/appointments`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (response.ok) {
@@ -1025,7 +1025,7 @@ class PatientDashboard {
             const newTime = document.getElementById('newAptTime').value;
             try {
                 const token = localStorage.getItem('userToken');
-                const response = await fetch(``${CONFIG.API_BASE_URL}/appointments/${appointmentId}`, {
+                const response = await fetch(`${CONFIG.API_BASE_URL}/appointments/${appointmentId}`, {
                     method: 'PUT',
                     headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ appointmentDate: newDate, appointmentTime: newTime })
@@ -1047,7 +1047,7 @@ class PatientDashboard {
         if (!confirm('Are you sure you want to cancel this appointment?')) return;
         try {
             const token = localStorage.getItem('userToken');
-            const response = await fetch(``${CONFIG.API_BASE_URL}/appointments/${appointmentId}`, {
+            const response = await fetch(`${CONFIG.API_BASE_URL}/appointments/${appointmentId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -1206,7 +1206,7 @@ async function saveHealthMetricToDB(metricData) {
             return;
         }
 
-        const response = await fetch('`${CONFIG.API_BASE_URL}/health-metrics', {
+        const response = await fetch(`${CONFIG.API_BASE_URL}/health-metrics`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -1410,7 +1410,7 @@ function printPrescription(prescriptionId) {
 function cancelPrescriptionRequest(requestId) {
     if (!confirm('Cancel this prescription request?')) return;
     const token = localStorage.getItem('userToken');
-    fetch(``${CONFIG.API_BASE_URL}/prescription-requests/${requestId}`, {
+    fetch(`${CONFIG.API_BASE_URL}/prescription-requests/${requestId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
     }).then(r => {
@@ -1651,7 +1651,7 @@ async function submitPrescriptionRequest(event) {
         }
 
         // Send to backend API
-        const response = await fetch('`${CONFIG.API_BASE_URL}/prescription-requests', {
+        const response = await fetch(`${CONFIG.API_BASE_URL}/prescription-requests`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -1722,7 +1722,7 @@ async function updateProfile() {
         }
 
         // Update patient profile via API
-        const response = await fetch('`${CONFIG.API_BASE_URL}/patients/me', {
+        const response = await fetch(`${CONFIG.API_BASE_URL}/patients/me`, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${token}`,

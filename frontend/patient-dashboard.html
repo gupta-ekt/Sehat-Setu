@@ -1040,7 +1040,7 @@
             let doctors = [];
             try {
                 const token = localStorage.getItem('userToken');
-                const res = await fetch('`${CONFIG.API_BASE_URL}/doctors', {
+                const res = await fetch(`${CONFIG.API_BASE_URL}/doctors`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (res.ok) {
@@ -1113,7 +1113,7 @@
 
                 try {
                     const token = localStorage.getItem('userToken');
-                    const response = await fetch('`${CONFIG.API_BASE_URL}/appointments', {
+                    const response = await fetch(`${CONFIG.API_BASE_URL}/appointments`, {
                         method: 'POST',
                         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
                         body: JSON.stringify({ doctorId, appointmentDate: date, appointmentTime: time, type, reason })
@@ -1308,7 +1308,7 @@
         function cancelPrescriptionRequest(requestId) {
             if (!confirm('Cancel this prescription request?')) return;
             const token = localStorage.getItem('userToken');
-            fetch(``${CONFIG.API_BASE_URL}/prescription-requests/${requestId}`, {
+            fetch(`${CONFIG.API_BASE_URL}/prescription-requests/${requestId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             }).then(r => {
