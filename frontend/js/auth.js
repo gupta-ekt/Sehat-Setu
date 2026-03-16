@@ -74,6 +74,17 @@ async function handleLogin(e) {
 
             showNotification('Login successful! Redirecting...', 'success');
 
+            // Check if user type matches selected tab
+            const selectedType = document.querySelector('.user-type-btn.active')?.dataset?.type || 
+                                 document.querySelector('.tab-btn.active')?.dataset?.type ||
+                                 document.querySelector('[data-type].active')?.dataset?.type;
+
+            if (selectedType && selectedType !== data.user.userType) {
+                showNotification(`This account is registered as a ${data.user.userType}. Please use the ${data.user.userType} login tab.`, 'error');
+                localStorage.clear();
+                return;
+            }
+
             // Redirect based on user type
             setTimeout(() => {
                 if (data.user.userType === 'patient') {
